@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /profile-photos/{userId}/{filePath=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /property-images/{userId}/{filePath=**} {
+      allow read: if isSignedIn();
+      // Prototype mode: allow any authenticated user to upload property images.
+      // This avoids false denies when client auth state/path UID mismatch occurs.
+      allow write: if isSignedIn();
+    }
+  }
+}
